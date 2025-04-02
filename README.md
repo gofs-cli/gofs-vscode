@@ -4,7 +4,9 @@
 
 ## Features
 
-- Navigate to route definitions and handlers from hx links
+Gofs helps you write apps that have go frontends and backends, bringing go's backward compatibility commitment to your entire app. Gofs templates are built using [Alpine.js](https://alpinejs.dev), [htmx](https://htmx.org), and [templ](https://templ.guide).
+
+- This VSCode plugin helps you navigate to route definitions and handlers from hx links in your pages.
 
 ![navigation](./img/navigation.gif)
 

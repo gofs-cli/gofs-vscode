@@ -1,0 +1,45 @@
+{
+  "name": "gofs-vscode",
+  "displayName": "Gofs",
+  "description": "Tools for go full stack development",
+  "version": "0.0.1",
+  "publisher": "gofs-cli",
+  "icon": "img/gofs.png",
+  "preview": true,
+  "repository": {
+    "url": "https://github.com/gofs-cli/gofs-vscode"
+  },
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "workspaceContains:.gofs"
+  ],
+  "main": "./dist/extension.js",
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "lookpath": "^1.2.3",
+    "vscode-languageclient": "^9.0.1"
+  }
+}

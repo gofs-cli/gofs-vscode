@@ -12,53 +12,63 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 
-let client: LanguageClient;
+let clients: Map<string, LanguageClient> = new Map();
 
 export async function activate() {
-	if (client) {
-		await client.stop();
+    	if (clients.size > 0) {
+        for (const client of clients.values()) {    
+            await client.stop();
+        }
+        clients.clear();
 	}
 
-	const lsp = await lookpath("gofs");
-	if (!lsp) {
+	const gofs = await lookpath("gofs");
+	if (!gofs) {
 		vscode.window.showErrorMessage("cannot find gofs in PATH");
 		return;
 	}
 
-	const serverOptions: ServerOptions = {
-		run: {
-			command:  lsp,
-			transport: TransportKind.stdio,
-			args: [
-				"lsp"
-			]
-		},
-		debug: {
-			command: lsp,
-			transport: TransportKind.stdio,
-			args: [
-				"lsp",
-			]
-		}
-	};
+	 // Find all go.mod files in the workspace
+	const goModFiles = await vscode.workspace.findFiles('**/go.mod');
+	if (goModFiles.length === 0) {
+		vscode.window.showErrorMessage("No Go modules found in the workspace.");
+		return;
+	}
+	
+	for (const goModFile of goModFiles) {
+		const moduleDir = vscode.Uri.joinPath(goModFile, '..').fsPath;
 
-	const clientOptions: LanguageClientOptions = {
-		documentSelector: [{ scheme: 'file', pattern: '**/*.{templ,go}' }],
-	};
+		const serverOptions: ServerOptions = {
+            run: {
+                command: gofs,
+                transport: TransportKind.stdio,
+                args: ["lsp"]
+            },
+            debug: {
+                command: gofs,
+                transport: TransportKind.stdio,
+                args: ["lsp", "--debug"]
+            }
+        };
 
-	client = new LanguageClient(
-		'gofs',
-		'gofs',
-		serverOptions,
-		clientOptions
-	);
+		const clientOptions: LanguageClientOptions = {
+            documentSelector: [{ scheme: 'file', pattern: `${moduleDir}/**/*.{templ,go}` }],
+            workspaceFolder: { uri: vscode.Uri.file(moduleDir), name: moduleDir, index: 0 }
+        };
 
-	client.start();
+        const client = new LanguageClient(
+            `gofs-${moduleDir}`,
+            `gofs (${moduleDir})`,
+            serverOptions,
+            clientOptions
+        );
+
+        client.start();
+        clients.set(moduleDir, client);
+	}
 }
 
 export function deactivate(): Thenable<void> | undefined {
-	if (!client) {
-		return undefined;
-	}
-	return client.stop();
+	const stopPromises = Array.from(clients.values()).map(client => client.stop());
+    return Promise.all(stopPromises).then(() => undefined);
 }
